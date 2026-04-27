@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-type PayState = 'input_amount' | 'scanning' | 'success';
+type PayState = 'input_amount' | 'pin' | 'scanning' | 'success';
 
 export function MakePaymentButton() {
   const colorScheme = useColorScheme();
@@ -13,12 +13,14 @@ export function MakePaymentButton() {
   const [modalVisible, setModalVisible] = useState(false);
   const [payState, setPayState] = useState<PayState>('input_amount');
   const [amount, setAmount] = useState('');
+  const [pin, setPin] = useState('');
 
   // When modal opens
   useEffect(() => {
     if (modalVisible) {
       setPayState('input_amount');
       setAmount('');
+      setPin('');
     }
   }, [modalVisible]);
 
@@ -55,6 +57,7 @@ export function MakePaymentButton() {
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.text }]}>
                 {payState === 'input_amount' && 'Enter Amount'}
+                {payState === 'pin' && 'Verify Payment'}
                 {payState === 'scanning' && 'NFC Payment'}
                 {payState === 'success' && 'Done'}
               </Text>
@@ -78,10 +81,46 @@ export function MakePaymentButton() {
                 <TouchableOpacity 
                   style={[styles.sendBtn, { backgroundColor: amount ? theme.tint : theme.surface }]}
                   disabled={!amount}
-                  onPress={() => setPayState('scanning')}
+                  onPress={() => setPayState('pin')}
                 >
                   <Text style={[styles.sendBtnText, { color: amount ? '#FFF' : theme.icon }]}>Proceed</Text>
                 </TouchableOpacity>
+              </View>
+            )}
+
+            {payState === 'pin' && (
+              <View style={styles.centerContainer}>
+                <Ionicons name="lock-closed" size={48} color={theme.tint} style={{ marginBottom: 20 }} />
+                <Text style={{ color: theme.text, fontSize: 18, marginBottom: 20 }}>Enter PIN or use Biometrics</Text>
+                <View style={{ flexDirection: 'row', gap: 16, marginBottom: 40 }}>
+                  {[1, 2, 3, 4].map(i => (
+                    <View key={i} style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: pin.length >= i ? theme.tint : theme.surface }} />
+                  ))}
+                </View>
+                
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', width: 280, gap: 10 }}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'FaceID', 0, 'Del'].map((item, idx) => (
+                    <TouchableOpacity 
+                      key={idx}
+                      style={{ width: 80, height: 80, justifyContent: 'center', alignItems: 'center', borderRadius: 40, backgroundColor: theme.surface }}
+                      onPress={() => {
+                        if (item === 'FaceID') setPayState('scanning');
+                        else if (item === 'Del') setPin(pin.slice(0, -1));
+                        else {
+                          const newPin = pin + item;
+                          setPin(newPin);
+                          if (newPin.length === 4) {
+                            setTimeout(() => setPayState('scanning'), 300);
+                          }
+                        }
+                      }}
+                    >
+                      {item === 'FaceID' ? <Ionicons name="scan" size={32} color={theme.text} /> :
+                       item === 'Del' ? <Ionicons name="backspace" size={32} color={theme.text} /> :
+                       <Text style={{ fontSize: 28, color: theme.text }}>{item}</Text>}
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             )}
 
@@ -128,7 +167,7 @@ const styles = StyleSheet.create({
   },
   btnText: { marginLeft: 12, fontWeight: 'bold', fontSize: 18 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 450 },
+  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 650 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
   centerContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
