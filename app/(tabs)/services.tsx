@@ -2,6 +2,7 @@ import { StyleSheet, View, Text, ScrollView, SafeAreaView, Platform, TouchableOp
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const services = [
   { id: '1', title: 'Airtime', icon: 'phone-portrait' },
@@ -20,11 +21,13 @@ const services = [
   { id: '14', title: 'Donations', icon: 'heart' },
   { id: '15', title: 'Solar', icon: 'sunny' },
   { id: '16', title: 'Fuel Delivery', icon: 'car' },
+  { id: '17', title: 'POS Terminal', icon: 'calculator', route: '/pos' },
 ];
 
 export default function ServicesScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
@@ -35,9 +38,13 @@ export default function ServicesScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.grid}>
           {services.map((s) => (
-            <TouchableOpacity key={s.id} style={styles.gridItem}>
+            <TouchableOpacity 
+              key={s.id} 
+              style={styles.gridItem}
+              onPress={() => s.route && router.push(s.route as any)}
+            >
               <View style={[styles.iconContainer, { backgroundColor: theme.surface }]}>
-                <Ionicons name={s.icon as any} size={28} color={theme.tint} />
+                <Ionicons name={(s as any).icon} size={28} color={theme.tint} />
               </View>
               <Text style={[styles.itemTitle, { color: theme.text }]}>{s.title}</Text>
             </TouchableOpacity>
