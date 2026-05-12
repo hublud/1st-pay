@@ -1,34 +1,36 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 type ServiceInfo = {
   id: string;
   name: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  iconColor: string;
+  icon: string;
 };
 
 const ALL_SERVICES: ServiceInfo[] = [
-  { id: '1', name: 'Airtime', icon: '📱' as any, color: '#fef2f2', iconColor: '#ef4444' },
-  { id: '2', name: 'Data', icon: '📶' as any, color: '#f0fdf4', iconColor: '#22c55e' },
-  { id: '3', name: 'Electricity', icon: '⚡' as any, color: '#fffbeb', iconColor: '#f59e0b' },
-  { id: '4', name: 'Internet', icon: '🌐' as any, color: '#eff6ff', iconColor: '#3b82f6' },
-  { id: '5', name: 'Betting', icon: '⚽' as any, color: '#f5f3ff', iconColor: '#8b5cf6' },
-  { id: '6', name: 'Cable TV', icon: '📺' as any, color: '#fff1f2', iconColor: '#f43f5e' },
-  { id: '7', name: 'Transport', icon: '🚌' as any, color: '#f0f9ff', iconColor: '#0ea5e9' },
-  { id: '8', name: 'School', icon: '🎓' as any, color: '#fdf2f7', iconColor: '#ec4899' },
-  { id: '9', name: 'Water', icon: '💧' as any, color: '#f0fdfa', iconColor: '#14b8a6' },
+  { id: '1', name: 'Airtime', icon: '📱' },
+  { id: '2', name: 'Data', icon: '📶' },
+  { id: '3', name: 'Electricity', icon: '⚡' },
+  { id: '4', name: 'Internet', icon: '🌐' },
+  { id: '5', name: 'Betting', icon: '⚽' },
+  { id: '6', name: 'Cable TV', icon: '📺' },
+  { id: '7', name: 'Transport', icon: '🚌' },
+  { id: '8', name: 'School', icon: '🎓' },
+  { id: '9', name: 'Water', icon: '💧' },
 ];
 
 export function QuickAccessWidget() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const isDark = colorScheme === 'dark';
   
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedServices, setSelectedServices] = useState<ServiceInfo[]>([
@@ -37,9 +39,13 @@ export function QuickAccessWidget() {
 
   const toggleService = (service: ServiceInfo) => {
     if (selectedServices.find(s => s.id === service.id)) {
-      setSelectedServices(selectedServices.filter(s => s.id !== service.id));
+      if (selectedServices.length > 1) {
+        setSelectedServices(selectedServices.filter(s => s.id !== service.id));
+      }
     } else {
-      setSelectedServices([...selectedServices, service]);
+      if (selectedServices.length < 8) {
+        setSelectedServices([...selectedServices, service]);
+      }
     }
   };
 
@@ -58,9 +64,13 @@ export function QuickAccessWidget() {
               if (service.name === 'Airtime') router.push('/airtime');
             }}
           >
-            <View style={[styles.iconContainer, { backgroundColor: service.color }]}>
-              <Text style={{ fontSize: 24 }}>{service.icon}</Text>
-            </View>
+            <LinearGradient
+              colors={isDark ? ['#2c2c2e', '#1c1c1e'] : ['#FFFFFF', '#F0F0F0']}
+              style={styles.icon3DContainer}
+            >
+              <Text style={styles.emojiIcon}>{service.icon}</Text>
+              <View style={styles.iconShadow} />
+            </LinearGradient>
             <Text style={[styles.serviceName, { color: theme.text }]} numberOfLines={1}>{service.name}</Text>
           </TouchableOpacity>
         ))}
@@ -69,7 +79,7 @@ export function QuickAccessWidget() {
           style={styles.serviceItem}
           onPress={() => setModalVisible(true)}
         >
-          <View style={[styles.iconContainer, { backgroundColor: 'rgba(0,0,0,0.05)' }]}>
+          <View style={[styles.icon3DContainer, { backgroundColor: theme.surface, elevation: 0, shadowOpacity: 0 }]}>
             <Ionicons name="add" size={28} color={theme.icon} />
           </View>
           <Text style={[styles.serviceName, { color: theme.icon }]}>Add More</Text>
@@ -100,7 +110,7 @@ export function QuickAccessWidget() {
                     ]}
                     onPress={() => toggleService(service)}
                   >
-                    <View style={[styles.modalIconBox, { backgroundColor: service.color }]}>
+                    <View style={styles.modalIconBox}>
                        <Text style={{ fontSize: 20 }}>{service.icon}</Text>
                     </View>
                     <Text style={[styles.modalServiceName, { color: theme.text }]}>{service.name}</Text>
@@ -113,7 +123,7 @@ export function QuickAccessWidget() {
             </ScrollView>
             
             <TouchableOpacity 
-              style={[styles.doneBtn, { backgroundColor: theme.tint }]}
+              style={[styles.doneBtn, { backgroundColor: '#d2b661' }]}
               onPress={() => setModalVisible(false)}
             >
               <Text style={styles.doneBtnText}>Done</Text>
@@ -127,47 +137,77 @@ export function QuickAccessWidget() {
 
 const styles = StyleSheet.create({
   container: { marginBottom: 32 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  grid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'flex-start',
+    gap: 0 
+  },
   serviceItem: { 
-    width: '22%', 
+    width: (width - 40) / 4, 
     alignItems: 'center', 
-    justifyContent: 'center', 
-    marginBottom: 12
+    marginBottom: 20
   },
-  iconContainer: { 
-    width: 56, 
-    height: 56, 
-    borderRadius: 12, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginBottom: 8 
+  icon3DContainer: {
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  serviceName: { fontSize: 11, textAlign: 'center', fontWeight: '600' },
+  emojiIcon: {
+    fontSize: 26,
+    zIndex: 1,
+  },
+  iconShadow: {
+    position: 'absolute',
+    bottom: 6,
+    width: 24,
+    height: 3,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 10,
+    zIndex: 0,
+  },
+  serviceName: { fontSize: 11, textAlign: 'center', fontWeight: '600', opacity: 0.8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 500, maxHeight: '85%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  modalSubtitle: { fontSize: 14, marginBottom: 20 },
+  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, minHeight: 500, maxHeight: '85%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold' },
+  modalSubtitle: { fontSize: 14, marginBottom: 24, lineHeight: 20 },
   modalGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingBottom: 20 },
   modalServiceItem: { 
     width: '48%', 
     flexDirection: 'row', 
     alignItems: 'center', 
-    padding: 12, 
-    borderRadius: 12, 
-    marginBottom: 12 
+    padding: 14, 
+    borderRadius: 16, 
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   modalIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalServiceName: { fontSize: 14, fontWeight: '500', flex: 1, marginLeft: 12 },
+  modalServiceName: { fontSize: 14, fontWeight: '600', flex: 1, marginLeft: 12 },
   checkIcon: { position: 'absolute', right: 12 },
-  doneBtn: { width: '100%', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
-  doneBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
+  doneBtn: { width: '100%', padding: 18, borderRadius: 16, alignItems: 'center', marginTop: 10 },
+  doneBtnText: { color: '#000', fontSize: 18, fontWeight: 'bold' }
 });

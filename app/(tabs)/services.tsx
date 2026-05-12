@@ -132,12 +132,13 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingHorizontal: 10,
     justifyContent: 'flex-start',
   },
   gridItem: {
-    width: width / 4,
+    width: (width - 20) / 3,
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 25,
   },
   icon3DContainer: {
     width: 68,
