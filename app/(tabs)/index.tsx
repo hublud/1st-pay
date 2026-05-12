@@ -31,18 +31,38 @@ export default function HomeScreen() {
           colors={['#e8cc7d', '#d2b661', '#b89a4b']}
           style={styles.headerGradient}
         >
-          {/* Wavy Background Patterns */}
+          {/* Wavy and Geometric Background Patterns */}
           <View style={styles.wavesContainer}>
-            <Svg height="100%" width="100%" viewBox={`0 0 ${width} 300`}>
+            <Svg height="100%" width="100%" viewBox={`0 0 ${width} 350`}>
+              {/* Abstract Wavy Shapes */}
               <Path
-                d="M0 100 C 150 150 350 0 500 100 L 500 300 L 0 300 Z"
-                fill="rgba(255, 255, 255, 0.1)"
-                transform="translate(0, 20)"
+                d={`M0 120 C ${width * 0.3} 180 ${width * 0.7} 40 ${width} 120 L ${width} 350 L 0 350 Z`}
+                fill="rgba(255, 255, 255, 0.08)"
               />
               <Path
-                d="M0 150 C 200 200 400 50 600 150 L 600 300 L 0 300 Z"
+                d={`M0 180 C ${width * 0.4} 240 ${width * 0.8} 80 ${width} 180 L ${width} 350 L 0 350 Z`}
                 fill="rgba(255, 255, 255, 0.05)"
-                transform="translate(-50, 40)"
+              />
+
+              {/* Geometric Intersecting Lines */}
+              <Path d={`M -50 50 L ${width + 50} 250`} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+              <Path d={`M -50 150 L ${width + 50} 50`} stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
+              <Path d={`M ${width * 0.2} -50 L ${width * 0.8} 400`} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+              <Path d={`M ${width * 0.7} -50 L ${width * 0.3} 400`} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+              <Path d={`M -50 200 L ${width + 50} 100`} stroke="rgba(255,255,255,0.1)" strokeWidth="0.8" />
+              
+              {/* Subtle Glowing Circles */}
+              <Path
+                d={`M ${width * 0.1} 50 A 60 60 0 1 0 ${width * 0.1 + 0.1} 50`}
+                fill="transparent"
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth="20"
+              />
+              <Path
+                d={`M ${width * 0.85} 200 A 40 40 0 1 0 ${width * 0.85 + 0.1} 200`}
+                fill="transparent"
+                stroke="rgba(255,255,255,0.04)"
+                strokeWidth="15"
               />
             </Svg>
           </View>

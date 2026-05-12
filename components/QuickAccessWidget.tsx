@@ -52,7 +52,7 @@ export function QuickAccessWidget() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Suggestion</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Action</Text>
       </View>
       
       <View style={styles.grid}>
