@@ -19,6 +19,14 @@ export default function ProfileScreen() {
           </View>
           <Text style={[styles.name, { color: theme.text }]}>Joshua Nwamife</Text>
           <Text style={[styles.tag, { color: theme.icon }]}>@joshuanwamife</Text>
+          
+          <View style={[styles.proToggleContainer, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.proToggleText, { color: theme.text }]}>Switch to Professional Account</Text>
+            <Switch 
+              trackColor={{ false: '#767577', true: theme.tint }}
+              thumbColor={isDark ? '#FFF' : '#f4f3f4'}
+            />
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -53,7 +61,13 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color={theme.icon} />
           </TouchableOpacity>
 
-
+          <TouchableOpacity style={[styles.settingRow, { borderBottomColor: theme.surface }]}>
+            <View style={styles.settingIconText}>
+              <Ionicons name="heart-outline" size={24} color={theme.icon} />
+              <Text style={[styles.settingText, { color: theme.text }]}>Support a Creator</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.icon} />
+          </TouchableOpacity>
 
           <TouchableOpacity style={[styles.settingRow, { borderBottomColor: theme.surface }]}>
             <View style={styles.settingIconText}>
@@ -84,6 +98,20 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 32, fontWeight: 'bold', color: '#000' },
   name: { fontSize: 24, fontWeight: 'bold' },
   tag: { fontSize: 16, marginTop: 4 },
+  proToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    width: '90%',
+  },
+  proToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   section: { paddingHorizontal: 20, marginTop: 32 },
   premiumBanner: {
     flexDirection: 'row',

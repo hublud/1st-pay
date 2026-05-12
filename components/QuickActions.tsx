@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRouter } from 'expo-router';
 import { ReceiveModal } from './ReceiveModal';
 
-type Route = '/payment' | '/services' | '/cards' | '/profile' | null;
-
-const actions: { id: string, title: string, icon: string, route: Route | '/spending' }[] = [
+const actions = [
   { id: 'receive', title: 'Receive', icon: 'arrow-down-circle', route: null },
   { id: 'transfer', title: 'Transfer', icon: 'send', route: '/payment' },
   { id: 'services', title: 'Services', icon: 'grid', route: '/services' },
@@ -16,12 +12,10 @@ const actions: { id: string, title: string, icon: string, route: Route | '/spend
 ];
 
 export function QuickActions() {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
   const [receiveVisible, setReceiveVisible] = useState(false);
 
-  const handlePress = (id: string, route: Route) => {
+  const handlePress = (id: string, route: any) => {
     if (id === 'receive') {
       setReceiveVisible(true);
     } else if (route) {
@@ -38,10 +32,10 @@ export function QuickActions() {
             style={styles.actionItem}
             onPress={() => handlePress(action.id, action.route)}
           >
-            <View style={[styles.iconContainer, { backgroundColor: theme.surface }]}>
-              <Ionicons name={action.icon as any} size={24} color={theme.tint} />
+            <View style={styles.iconContainer}>
+              <Ionicons name={action.icon as any} size={24} color="#000" />
             </View>
-            <Text style={[styles.title, { color: theme.text }]}>{action.title}</Text>
+            <Text style={styles.title}>{action.title}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -55,21 +49,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginTop: 24,
+    width: '100%',
   },
   actionItem: {
     alignItems: 'center',
+    width: '22%',
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   title: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(0, 0, 0, 0.7)',
+    textAlign: 'center',
   }
 });

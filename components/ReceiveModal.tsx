@@ -1,26 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Modal, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Modal, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export function ReceiveModal({ visible, onClose }: { visible: boolean, onClose: () => void }) {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   
   const [receiveState, setReceiveState] = useState<'waiting' | 'success'>('waiting');
+  const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       setReceiveState('waiting');
-      // Simulate receiving payment after 4 seconds
+      
+      // Continuous pulse animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 2000,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          })
+        ])
+      ).start();
+
+      // Simulate receiving payment after 8 seconds
       const timer = setTimeout(() => {
         setReceiveState('success');
-        setTimeout(() => onClose(), 2500); // Auto close
-      }, 4000);
+        setTimeout(() => onClose(), 3000);
+      }, 8000);
       return () => clearTimeout(timer);
+    } else {
+      pulseAnim.setValue(0);
     }
   }, [visible]);
+
+  const pulseScale1 = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 2],
+  });
+
+  const pulseOpacity1 = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.6, 0],
+  });
+
+  const pulseScale2 = pulseAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.5, 2.5],
+  });
+
+  const pulseOpacity2 = pulseAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0.4, 0],
+  });
 
   return (
     <Modal
@@ -40,19 +82,37 @@ export function ReceiveModal({ visible, onClose }: { visible: boolean, onClose: 
 
           {receiveState === 'waiting' && (
             <View style={styles.centerContainer}>
-              <View style={[styles.qrContainer, { backgroundColor: '#FFF' }]}>
-                <Ionicons name="qr-code" size={200} color="#000" />
+              <View style={styles.nfcAnimContainer}>
+                <Animated.View style={[
+                  styles.nfcPulse, 
+                  { 
+                    backgroundColor: theme.tint, 
+                    opacity: pulseOpacity1,
+                    transform: [{ scale: pulseScale1 }]
+                  }
+                ]} />
+                <Animated.View style={[
+                  styles.nfcPulse, 
+                  { 
+                    backgroundColor: theme.tint, 
+                    opacity: pulseOpacity2,
+                    transform: [{ scale: pulseScale2 }]
+                  }
+                ]} />
+                <LinearGradient
+                  colors={['#d2b661', '#b89a4b']}
+                  style={styles.nfcCircle}
+                >
+                  <Ionicons name="radio-outline" size={60} color="#000" />
+                </LinearGradient>
               </View>
-              <Text style={[styles.infoText, { color: theme.text }]}>Scan QR Code to pay Joshua Nwamife</Text>
               
-              <View style={[styles.nfcDivider, { borderBottomColor: theme.surface }]} />
+              <Text style={[styles.infoTitle, { color: theme.text }]}>NFC Ready</Text>
+              <Text style={[styles.infoSubtitle, { color: theme.icon }]}>Tap on my device to send to me</Text>
               
-              <View style={styles.nfcContainer}>
-                <Ionicons name="wifi" size={40} color={theme.tint} style={{ transform: [{ rotate: '90deg' }] }} />
-                <View style={{ marginLeft: 16 }}>
-                  <Text style={[styles.nfcTitle, { color: theme.text }]}>NFC Ready</Text>
-                  <Text style={[styles.nfcDesc, { color: theme.icon }]}>Waiting for sender to send...</Text>
-                </View>
+              <View style={styles.deviceMockup}>
+                 <Ionicons name="phone-portrait-outline" size={40} color={theme.icon} />
+                 <Ionicons name="arrow-down" size={24} color={theme.tint} style={styles.arrowAnim} />
               </View>
             </View>
           )}
@@ -78,13 +138,14 @@ const styles = StyleSheet.create({
   modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 500 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 },
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  centerContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  qrContainer: { padding: 16, borderRadius: 16, marginBottom: 16, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8 },
-  infoText: { fontSize: 16, fontWeight: '500', marginBottom: 32 },
-  nfcDivider: { width: '100%', borderBottomWidth: 1, marginBottom: 32 },
-  nfcContainer: { flexDirection: 'row', alignItems: 'center', width: '100%', paddingHorizontal: 20, paddingVertical: 16, borderRadius: 16, backgroundColor: 'rgba(212, 175, 55, 0.1)' },
-  nfcTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
-  nfcDesc: { fontSize: 14 },
+  centerContainer: { alignItems: 'center', flex: 1, justifyContent: 'center', paddingVertical: 20 },
+  nfcAnimContainer: { width: 200, height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: 30 },
+  nfcPulse: { position: 'absolute', width: 180, height: 180, borderRadius: 90 },
+  nfcCircle: { width: 100, height: 100, borderRadius: 50, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: '#d2b661', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10 },
+  infoTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
+  infoSubtitle: { fontSize: 16, textAlign: 'center', opacity: 0.8 },
+  deviceMockup: { marginTop: 40, alignItems: 'center' },
+  arrowAnim: { marginTop: 10 },
   successCircle: { width: 120, height: 120, borderRadius: 60, justifyContent: 'center', alignItems: 'center' },
   amountText: { fontSize: 36, fontWeight: 'bold' },
   successText: { fontSize: 18, fontWeight: '500', textAlign: 'center' }

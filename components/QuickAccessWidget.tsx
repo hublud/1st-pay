@@ -9,18 +9,20 @@ type ServiceInfo = {
   id: string;
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  iconColor: string;
 };
 
 const ALL_SERVICES: ServiceInfo[] = [
-  { id: '1', name: 'Airtime', icon: 'phone-portrait' },
-  { id: '2', name: 'Data', icon: 'wifi' },
-  { id: '3', name: 'Electricity', icon: 'flash' },
-  { id: '4', name: 'Internet', icon: 'globe' },
-  { id: '5', name: 'Betting', icon: 'football' },
-  { id: '6', name: 'Cable TV', icon: 'tv' },
-  { id: '7', name: 'Transport', icon: 'car' },
-  { id: '8', name: 'School', icon: 'school' },
-  { id: '9', name: 'Water', icon: 'water' },
+  { id: '1', name: 'Airtime', icon: '📱' as any, color: '#fef2f2', iconColor: '#ef4444' },
+  { id: '2', name: 'Data', icon: '📶' as any, color: '#f0fdf4', iconColor: '#22c55e' },
+  { id: '3', name: 'Electricity', icon: '⚡' as any, color: '#fffbeb', iconColor: '#f59e0b' },
+  { id: '4', name: 'Internet', icon: '🌐' as any, color: '#eff6ff', iconColor: '#3b82f6' },
+  { id: '5', name: 'Betting', icon: '⚽' as any, color: '#f5f3ff', iconColor: '#8b5cf6' },
+  { id: '6', name: 'Cable TV', icon: '📺' as any, color: '#fff1f2', iconColor: '#f43f5e' },
+  { id: '7', name: 'Transport', icon: '🚌' as any, color: '#f0f9ff', iconColor: '#0ea5e9' },
+  { id: '8', name: 'School', icon: '🎓' as any, color: '#fdf2f7', iconColor: '#ec4899' },
+  { id: '9', name: 'Water', icon: '💧' as any, color: '#f0fdfa', iconColor: '#14b8a6' },
 ];
 
 export function QuickAccessWidget() {
@@ -30,7 +32,7 @@ export function QuickAccessWidget() {
   
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedServices, setSelectedServices] = useState<ServiceInfo[]>([
-    ALL_SERVICES[0], ALL_SERVICES[1], ALL_SERVICES[2]
+    ALL_SERVICES[0], ALL_SERVICES[1], ALL_SERVICES[2], ALL_SERVICES[3]
   ]);
 
   const toggleService = (service: ServiceInfo) => {
@@ -43,38 +45,32 @@ export function QuickAccessWidget() {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Access</Text>
+      <View style={styles.header}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Suggestion</Text>
+      </View>
       
       <View style={styles.grid}>
         {selectedServices.map(service => (
           <TouchableOpacity 
             key={service.id} 
-            style={[styles.serviceItem, { backgroundColor: theme.surface }]}
+            style={styles.serviceItem}
             onPress={() => {
               if (service.name === 'Airtime') router.push('/airtime');
             }}
           >
-            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
-              <Ionicons name={service.icon} size={24} color={theme.tint} />
+            <View style={[styles.iconContainer, { backgroundColor: service.color }]}>
+              <Text style={{ fontSize: 24 }}>{service.icon}</Text>
             </View>
             <Text style={[styles.serviceName, { color: theme.text }]} numberOfLines={1}>{service.name}</Text>
-            
-            {/* Small minus badge to indicate removal */}
-            <TouchableOpacity 
-              style={[styles.removeBadge, { backgroundColor: theme.background }]}
-              onPress={() => toggleService(service)}
-            >
-              <Ionicons name="remove-circle" size={16} color="#e74c3c" />
-            </TouchableOpacity>
           </TouchableOpacity>
         ))}
 
         <TouchableOpacity 
-          style={[styles.serviceItem, styles.dashedItem, { borderColor: theme.icon }]}
+          style={styles.serviceItem}
           onPress={() => setModalVisible(true)}
         >
-          <View style={[styles.iconContainer, { backgroundColor: 'transparent' }]}>
-            <Ionicons name="add" size={32} color={theme.icon} />
+          <View style={[styles.iconContainer, { backgroundColor: 'rgba(0,0,0,0.05)' }]}>
+            <Ionicons name="add" size={28} color={theme.icon} />
           </View>
           <Text style={[styles.serviceName, { color: theme.icon }]}>Add More</Text>
         </TouchableOpacity>
@@ -84,7 +80,7 @@ export function QuickAccessWidget() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.background }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Manage Quick Access</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Manage Suggestions</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.text} />
               </TouchableOpacity>
@@ -104,7 +100,9 @@ export function QuickAccessWidget() {
                     ]}
                     onPress={() => toggleService(service)}
                   >
-                    <Ionicons name={service.icon} size={24} color={isSelected ? theme.tint : theme.text} />
+                    <View style={[styles.modalIconBox, { backgroundColor: service.color }]}>
+                       <Text style={{ fontSize: 20 }}>{service.icon}</Text>
+                    </View>
                     <Text style={[styles.modalServiceName, { color: theme.text }]}>{service.name}</Text>
                     {isSelected && (
                       <Ionicons name="checkmark-circle" size={20} color={theme.tint} style={styles.checkIcon} />
@@ -128,22 +126,25 @@ export function QuickAccessWidget() {
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 32, paddingHorizontal: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  container: { marginBottom: 32 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   serviceItem: { 
     width: '22%', 
-    aspectRatio: 0.85, 
-    borderRadius: 16, 
     alignItems: 'center', 
     justifyContent: 'center', 
-    padding: 8,
-    position: 'relative'
+    marginBottom: 12
   },
-  dashedItem: { borderWidth: 1, borderStyle: 'dashed', backgroundColor: 'transparent' },
-  iconContainer: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  serviceName: { fontSize: 11, textAlign: 'center', fontWeight: '500' },
-  removeBadge: { position: 'absolute', top: -4, right: -4, borderRadius: 8 },
+  iconContainer: { 
+    width: 56, 
+    height: 56, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginBottom: 8 
+  },
+  serviceName: { fontSize: 11, textAlign: 'center', fontWeight: '600' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 500, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
@@ -154,9 +155,16 @@ const styles = StyleSheet.create({
     width: '48%', 
     flexDirection: 'row', 
     alignItems: 'center', 
-    padding: 16, 
+    padding: 12, 
     borderRadius: 12, 
     marginBottom: 12 
+  },
+  modalIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalServiceName: { fontSize: 14, fontWeight: '500', flex: 1, marginLeft: 12 },
   checkIcon: { position: 'absolute', right: 12 },
