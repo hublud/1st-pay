@@ -1,8 +1,9 @@
-import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, SafeAreaView, Platform, Modal, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, SafeAreaView, Platform, Modal, ActivityIndicator, Animated, Easing } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useEffect } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useRef } from 'react';
 
 const recentTransfers = [
   { id: '1', name: 'Alice Smith', initials: 'AS' },
@@ -27,15 +28,56 @@ export default function PaymentScreen() {
     setPayState('input');
   };
 
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+  
   useEffect(() => {
     if (payState === 'scanning') {
+      // Start pulse animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 2000,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          })
+        ])
+      ).start();
+
       const timer = setTimeout(() => {
         setPayState('success');
         setTimeout(() => setSelectedUser(null), 2000);
-      }, 2000);
+      }, 3000);
       return () => clearTimeout(timer);
+    } else {
+      pulseAnim.setValue(0);
     }
   }, [payState]);
+
+  const pulseScale1 = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 2],
+  });
+
+  const pulseOpacity1 = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.6, 0],
+  });
+
+  const pulseScale2 = pulseAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.5, 2.5],
+  });
+
+  const pulseOpacity2 = pulseAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0.4, 0],
+  });
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
@@ -164,7 +206,14 @@ export default function PaymentScreen() {
                   <TouchableOpacity 
                     style={[styles.sendBtn, { backgroundColor: amount ? '#d2b661' : theme.surface }]}
                     disabled={!amount}
-                    onPress={() => setPayState('pin')}
+                    onPress={() => {
+                      const numAmount = parseFloat(amount);
+                      if (numAmount < 15000) {
+                        setPayState('scanning');
+                      } else {
+                        setPayState('pin');
+                      }
+                    }}
                   >
                     <Text style={[styles.sendBtnText, { color: amount ? '#000' : theme.icon }]}>Continue</Text>
                   </TouchableOpacity>
@@ -214,10 +263,33 @@ export default function PaymentScreen() {
               {payState === 'scanning' && (
                 <View style={styles.centerContainer}>
                   <Text style={[styles.scanningAmount, { color: theme.text }]}>₦{amount}</Text>
-                  <View style={styles.scanningVisual}>
-                    <ActivityIndicator size="large" color="#d2b661" />
+                  
+                  <View style={styles.tapIconContainer}>
+                    <Animated.View style={[
+                      styles.pulseLayer, 
+                      { 
+                        backgroundColor: '#d2b661', 
+                        opacity: pulseOpacity1,
+                        transform: [{ scale: pulseScale1 }]
+                      }
+                    ]} />
+                    <Animated.View style={[
+                      styles.pulseLayer, 
+                      { 
+                        backgroundColor: '#d2b661', 
+                        opacity: pulseOpacity2,
+                        transform: [{ scale: pulseScale2 }]
+                      }
+                    ]} />
+                    <LinearGradient colors={['#d2b661', '#b89a4b']} style={styles.tapCircle}>
+                      <Ionicons name="radio-outline" size={60} color="#000" />
+                    </LinearGradient>
                   </View>
-                  <Text style={[styles.scanningText, { color: theme.text }]}>Processing payment...</Text>
+                  
+                  <Text style={[styles.scanningText, { color: theme.text, marginTop: 40 }]}>Ready to Tap</Text>
+                  <Text style={[styles.actionDesc, { color: theme.icon, textAlign: 'center', marginTop: 10 }]}>
+                    Binding with device to complete transfer...
+                  </Text>
                 </View>
               )}
 
@@ -305,9 +377,32 @@ const styles = StyleSheet.create({
   numPadBtn: { width: 75, height: 75, justifyContent: 'center', alignItems: 'center', borderRadius: 40 },
   numPadText: { fontSize: 26, fontWeight: '600' },
   // Scanning/Success
-  scanningAmount: { fontSize: 36, fontWeight: 'bold', marginBottom: 40 },
-  scanningVisual: { marginVertical: 40 },
-  scanningText: { fontSize: 16, fontWeight: '500' },
+  scanningAmount: { fontSize: 36, fontWeight: 'bold', marginBottom: 60 },
+  tapIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 200,
+    height: 200,
+  },
+  pulseLayer: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  tapCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#d2b661',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  scanningText: { fontSize: 20, fontWeight: 'bold' },
   successLottie: { marginBottom: 30 },
   successTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
   successSubtitle: { fontSize: 16, textAlign: 'center', marginBottom: 40 },

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Platform, TextInput, Modal, ActivityIndicator, Animated, Easing } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Platform, TextInput, Modal, ActivityIndicator, Animated, Easing, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -60,7 +60,18 @@ export default function SupermarketPaymentScreen() {
   });
 
   const handleAmountSubmit = () => {
-    if (amount) setPayState('pin');
+    if (amount) {
+      const numAmount = parseFloat(amount);
+      if (numAmount < 15000) {
+        setPayState('tapping');
+        // Simulate tap success after delay
+        setTimeout(() => {
+          setPayState('success');
+        }, 3000);
+      } else {
+        setPayState('pin');
+      }
+    }
   };
 
   const handlePinSubmit = () => {
@@ -118,7 +129,7 @@ export default function SupermarketPaymentScreen() {
         <Text style={styles.headerTitle}>Make Transfer</Text>
       </LinearGradient>
 
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {payState === 'amount' && (
           <View style={styles.stepContainer}>
             <Text style={[styles.label, { color: theme.icon }]}>Enter Amount</Text>
@@ -155,58 +166,58 @@ export default function SupermarketPaymentScreen() {
             </TouchableOpacity>
           </View>
         )}
+      </ScrollView>
 
-        {payState === 'tapping' && (
-          <View style={styles.tapContainer}>
-            <View style={styles.tapIconContainer}>
-              <Animated.View style={[
-                styles.pulseLayer, 
-                { 
-                  backgroundColor: '#d2b661', 
-                  opacity: pulseOpacity1,
-                  transform: [{ scale: pulseScale1 }]
-                }
-              ]} />
-              <Animated.View style={[
-                styles.pulseLayer, 
-                { 
-                  backgroundColor: '#d2b661', 
-                  opacity: pulseOpacity2,
-                  transform: [{ scale: pulseScale2 }]
-                }
-              ]} />
-              <LinearGradient colors={['#d2b661', '#b89a4b']} style={styles.tapCircle}>
-                <Ionicons name="radio-outline" size={80} color="#000" />
-              </LinearGradient>
-              <View style={styles.tappingAnimation}>
-                 <ActivityIndicator size="large" color="#d2b661" />
-              </View>
+      {payState === 'tapping' && (
+        <View style={styles.centerFullScreen}>
+          <View style={styles.tapIconContainer}>
+            <Animated.View style={[
+              styles.pulseLayer, 
+              { 
+                backgroundColor: '#d2b661', 
+                opacity: pulseOpacity1,
+                transform: [{ scale: pulseScale1 }]
+              }
+            ]} />
+            <Animated.View style={[
+              styles.pulseLayer, 
+              { 
+                backgroundColor: '#d2b661', 
+                opacity: pulseOpacity2,
+                transform: [{ scale: pulseScale2 }]
+              }
+            ]} />
+            <LinearGradient colors={['#d2b661', '#b89a4b']} style={styles.tapCircle}>
+              <Ionicons name="radio-outline" size={80} color="#000" />
+            </LinearGradient>
+            <View style={styles.tappingAnimation}>
+               <ActivityIndicator size="large" color="#d2b661" />
             </View>
-            <Text style={[styles.tapTitle, { color: theme.text }]}>Ready to Tap</Text>
-            <Text style={[styles.tapSubtitle, { color: theme.icon }]}>
-              Please hold your phone near the payment device to complete the transfer of ₦{amount}
-            </Text>
           </View>
-        )}
+          <Text style={[styles.tapTitle, { color: theme.text }]}>Ready to Tap</Text>
+          <Text style={[styles.tapSubtitle, { color: theme.icon }]}>
+            Please hold your phone near the payment device to complete the transfer of ₦{amount}
+          </Text>
+        </View>
+      )}
 
-        {payState === 'success' && (
-          <View style={styles.successContainer}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark-circle" size={100} color="#22c55e" />
-            </View>
-            <Text style={[styles.successTitle, { color: theme.text }]}>Payment Successful</Text>
-            <Text style={[styles.successSubtitle, { color: theme.icon }]}>
-              Successfully paid ₦{amount} to POS
-            </Text>
-            <TouchableOpacity 
-              style={[styles.primaryButton, { backgroundColor: '#d2b661' }]} 
-              onPress={() => router.replace('/')}
-            >
-              <Text style={[styles.buttonText, { color: '#000' }]}>Back to Home</Text>
-            </TouchableOpacity>
+      {payState === 'success' && (
+        <View style={styles.centerFullScreen}>
+          <View style={styles.successIcon}>
+            <Ionicons name="checkmark-circle" size={100} color="#22c55e" />
           </View>
-        )}
-      </View>
+          <Text style={[styles.successTitle, { color: theme.text }]}>Payment Successful</Text>
+          <Text style={[styles.successSubtitle, { color: theme.icon }]}>
+            Successfully paid ₦{amount} to POS
+          </Text>
+          <TouchableOpacity 
+            style={[styles.primaryButton, { backgroundColor: '#d2b661', marginTop: 40 }]} 
+            onPress={() => router.replace('/')}
+          >
+            <Text style={[styles.buttonText, { color: '#000' }]}>Back to Home</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -242,8 +253,18 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   stepContainer: {
-    flex: 1,
+    paddingTop: 20,
     alignItems: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  centerFullScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   label: {
     fontSize: 16,
@@ -253,7 +274,7 @@ const styles = StyleSheet.create({
   amountDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   currency: {
     fontSize: 32,
@@ -269,7 +290,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   key: {
     width: '33%',
@@ -287,8 +308,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 'auto',
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 40,
   },
   buttonText: {
     fontSize: 18,
